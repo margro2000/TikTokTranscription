@@ -7,8 +7,8 @@ from Transcribe import extract_transcript_from_deepgram, is_transcript_usable
 
 def get_json_from_response(text):
     # Find the start and end of the JSON string
-    start_index = text.index('[')
-    end_index = text.rindex(']') + 1  # +1 to include the closing bracket
+    start_index = text.index("[")
+    end_index = text.rindex("]") + 1  # +1 to include the closing bracket
 
     # Extract the JSON string
     json_str = text[start_index:end_index]
@@ -133,14 +133,13 @@ def extract_qa_from_transcript(module_title, topic, transcript):
     return response
 
 
-def hydrate_module_from_title(module_title, save=False):
+def hydrate_module_from_title(module_title, course_id, save=False):
     topics = generate_topics_from_module_title(module_title)
     for topic in topics:
         index = 0
         while index < 10:
             video = download_video_from_tiktok(topic["search_query"], index)
-            transcript = extract_transcript_from_deepgram(
-                video["path"])
+            transcript = extract_transcript_from_deepgram(video["path"])
             print(transcript)
             if is_transcript_usable(transcript):
                 video["transcript"] = transcript
@@ -150,13 +149,11 @@ def hydrate_module_from_title(module_title, save=False):
 
         topic["video"] = video
         qa = extract_qa_from_transcript(
-            module_title,
-            topic["topic"],
-            video["transcript"]
+            module_title, topic["topic"], video["transcript"]
         )
         topic["qa"] = qa
 
     if save:
-        save_to_mongo(module_title, topics)
+        save_to_mongo(module_title, topics, course_id)
 
     return topics
