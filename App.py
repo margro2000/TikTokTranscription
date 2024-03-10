@@ -234,6 +234,8 @@ def hydrate_module_from_title(module_title, course_id, save=False, force=False):
         topic["qa"] = qa
 
     module_summary = generate_module_summary(module_title, topics)
+
+    module_summary = generate_module_summary(module_title, topics)
     print(module_summary)
 
     module_image_path = generate_openai_image(module_title)

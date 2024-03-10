@@ -23,6 +23,5 @@ def ask_solar(prompt, system_prompt="You are a helpful master tutor AI living in
     )
     return response.choices[0].message.content
 
-
 if __name__ == "__main__":
     print(ask_solar("What is the weather like today?"))
