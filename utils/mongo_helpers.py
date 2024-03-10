@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def save_to_mongo(module_title, topics, module_summary, force=False):
+def save_to_mongo(module_title, topics, module_summary, module_image_url="", force=False):
     mongo_url = os.getenv('MONGO_URL')
     client = MongoClient(mongo_url)
     # Replace 'your_database_name' with your actual database name
@@ -17,15 +17,23 @@ def save_to_mongo(module_title, topics, module_summary, force=False):
     if force:
         # If force is True, insert or update the document
         collection.update_one({'module_title': module_title}, {
-                              '$set': {'topics': topics, 'module_summary': module_summary}}, upsert=True)
+                              '$set': {
+                                  'topics': topics,
+                                  'module_summary': module_summary,
+                                  'module_image_url': module_image_url
+                              }}, upsert=True)
         print(
             f"Document with module_title '{module_title}' inserted or updated with force.")
     else:
         # Check if a document with the same module_title exists
         if collection.find_one({'module_title': module_title}) is None:
             # If not found, insert the new document
-            document = {'module_title': module_title,
-                        'topics': topics, 'module_summary': module_summary}
+            document = {
+                'module_title': module_title,
+                'topics': topics,
+                'module_summary': module_summary,
+                'module_image_url': module_image_url
+            }
             collection.insert_one(document)
         else:
             print(
@@ -49,7 +57,8 @@ def get_module_summary(module_title):
         return module_data.get('module_summary', '')
     else:
         return None
-    
+
+
 def get_module(module_title):
     mongo_url = os.getenv('MONGO_URL')
     client = MongoClient(mongo_url)
@@ -58,7 +67,7 @@ def get_module(module_title):
 
     module_data = collection.find_one({'module_title': module_title})
     client.close()
-    
+
     if module_data:
         # Convert ObjectId to string
         module_data['_id'] = str(module_data['_id'])

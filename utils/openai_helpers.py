@@ -76,6 +76,8 @@ def generate_openai_image(prompt_seed):
         
         Like the design for 'learn html' can almost be a stylized `</>` or a web browser globe.
         
+        Generated image should be square and fill the whole canvas.
+        
         That was just an example, the current prompt is '{prompt_seed}'
         
         Design vibes: super modern, blue, outlines, very very simple, always white bg
@@ -96,4 +98,4 @@ def generate_openai_image(prompt_seed):
 
 if __name__ == "__main__":
     print("hello")
-    print(generate_openai_image("adobe illustrator swatches"))
+    print(generate_openai_image("learn figma"))

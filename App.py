@@ -1,6 +1,6 @@
 from utils.mongo_helpers import save_to_mongo
 import json
-from utils.openai_helpers import get_openai_response
+from utils.openai_helpers import get_openai_response, generate_openai_image
 from utils.mongo_helpers import get_module_summary, get_module
 from utils.solar_helpers import ask_solar
 from Download import download_video_from_tiktok
@@ -238,9 +238,11 @@ def hydrate_module_from_title(module_title, save=False, force=False):
 
     module_summary = generate_module_summary(module_title, topics)
     print(module_summary)
+    
+    module_image_url = generate_openai_image(module_title)
 
     if save:
-        save_to_mongo(module_title, topics, module_summary, force)
+        save_to_mongo(module_title, topics, module_summary, module_image_url, force)
 
     return topics
 
