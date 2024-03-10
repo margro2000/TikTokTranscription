@@ -239,10 +239,10 @@ def hydrate_module_from_title(module_title, save=False, force=False):
     module_summary = generate_module_summary(module_title, topics)
     print(module_summary)
     
-    module_image_url = generate_openai_image(module_title)
+    module_image_path = generate_openai_image(module_title)
 
     if save:
-        save_to_mongo(module_title, topics, module_summary, module_image_url, force)
+        save_to_mongo(module_title, topics, module_summary, module_image_path, force)
 
     return topics
 

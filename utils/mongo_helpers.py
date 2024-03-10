@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def save_to_mongo(module_title, topics, module_summary, module_image_url="", force=False):
+def save_to_mongo(module_title, topics, module_summary, module_image_path="", force=False):
     mongo_url = os.getenv('MONGO_URL')
     client = MongoClient(mongo_url)
     # Replace 'your_database_name' with your actual database name
@@ -20,7 +20,7 @@ def save_to_mongo(module_title, topics, module_summary, module_image_url="", for
                               '$set': {
                                   'topics': topics,
                                   'module_summary': module_summary,
-                                  'module_image_url': module_image_url
+                                  'module_image_url': module_image_path
                               }}, upsert=True)
         print(
             f"Document with module_title '{module_title}' inserted or updated with force.")
@@ -32,7 +32,7 @@ def save_to_mongo(module_title, topics, module_summary, module_image_url="", for
                 'module_title': module_title,
                 'topics': topics,
                 'module_summary': module_summary,
-                'module_image_url': module_image_url
+                'module_image_path': module_image_path
             }
             collection.insert_one(document)
         else:
