@@ -64,7 +64,24 @@ def download_image(openai_image_url):
         return None
 
 
-def generate_openai_image(prompt):
+def generate_openai_image(prompt_seed):
+
+    prompt = f"""
+        Generate an image for the following prompt keeping in mind 
+        that it will be used in the ux of a quiz web app. 
+        
+        Our designs should almost be like logos or vector icons in how simple they are.
+        
+        Lines should be very slim, like an outline. Do not forget ALWAYS USE a white background. Mention this explicitly and USE CAPS.
+        
+        Like the design for 'learn html' can almost be a stylized `</>` or a web browser globe.
+        
+        That was just an example, the current prompt is '{prompt_seed}'
+        
+        Design vibes: super modern, blue, outlines, very very simple, always white bg
+        
+        seed: {prompt_seed}
+    """
     response = client.images.generate(
         model="dall-e-3",
         prompt=prompt,
@@ -79,4 +96,4 @@ def generate_openai_image(prompt):
 
 if __name__ == "__main__":
     print("hello")
-    print(generate_openai_image("learn html"))
+    print(generate_openai_image("adobe illustrator swatches"))
