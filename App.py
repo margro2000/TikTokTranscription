@@ -5,6 +5,45 @@ from utils.mongo_helpers import get_module_summary, get_module
 from utils.solar_helpers import ask_solar
 from Download import download_video_from_tiktok
 from Transcribe import extract_transcript_from_deepgram, is_transcript_usable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse, unquote
+import os
+import requests
+
+
+def download_image(openai_image_url):
+    # Parse the URL to extract the path, then unquote to decode percent-encoded characters
+    parsed_url = urlparse(openai_image_url)
+    path = unquote(parsed_url.path)
+
+    # Extract the filename from the URL path
+    filename = os.path.basename(path)
+
+    # Specify the directory where you want to save the image
+    root_dir = os.path.join(os.getcwd(), "downloads")
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
+    # Full path for the file
+    file_path = os.path.join(root_dir, filename)
+
+    # Check if the file already exists
+    if os.path.exists(file_path):
+        print(f"File '{filename}' already exists. Skipping download.")
+        return file_path
+
+    # Download the image
+    response = requests.get(openai_image_url, stream=True)
+    if response.status_code == 200:
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+        print(f"File '{filename}' downloaded successfully.")
+        return file_path
+    else:
+        print(
+            f"Failed to download the file. Status code: {response.status_code}")
+        return None
 
 
 def get_json_from_response(text):
@@ -34,7 +73,7 @@ def generate_topics_from_module_title(module_title):
     For example, given the module title "Working with objects using Adobe Illustrator", we expect output like this, except whittled down to 5.
     
     [
-        {{generate_topics_from_module_title
+        {{
             "topic": "Creating shapes and objects",
             "search_query": "adobe illustrator creating shapes objects tutorial"
         }},
@@ -213,35 +252,70 @@ def generate_module_suggestions(module_title, question, answer, lesson_structure
     return response
 
 
+def process_topic(module_title, topic):
+    index = 0
+    while index < 10:
+        video = download_video_from_tiktok(topic["search_query"], index)
+        transcript = extract_transcript_from_deepgram(video["path"])
+        print(transcript)
+        if is_transcript_usable(transcript):
+            video["transcript"] = transcript
+            break
+        else:
+            index += 1
+
+    topic["video"] = video
+    qa = extract_qa_from_transcript(
+        module_title, topic["topic"], video["transcript"])
+    topic["qa"] = qa
+    return topic
+
+
 def hydrate_module_from_title(module_title, course_id, save=False, force=False):
     topics = generate_topics_from_module_title(module_title)
-    for topic in topics:
-        index = 0
-        while index < 10:
-            video = download_video_from_tiktok(topic["search_query"], index)
-            transcript = extract_transcript_from_deepgram(video["path"])
-            print(transcript)
-            if is_transcript_usable(transcript):
-                video["transcript"] = transcript
-                break
-            else:
-                index += 1
 
-        topic["video"] = video
-        qa = extract_qa_from_transcript(
-            module_title, topic["topic"], video["transcript"]
-        )
-        topic["qa"] = qa
+    # Initialize a dictionary to hold future results for different types of tasks
+    future_to_task = {}
 
-    module_summary = generate_module_summary(module_title, topics)
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        # Submit topics for processing
+        for topic in topics:
+            future = executor.submit(process_topic, module_title, topic)
+            future_to_task[future] = ('topic', topic)
+
+        # Submit module summary and image path tasks
+        future_summary = executor.submit(
+            generate_module_summary, module_title, topics)
+        future_to_task[future_summary] = ('module_summary', None)
+
+        future_image_path = executor.submit(
+            generate_openai_image, module_title)
+        future_to_task[future_image_path] = ('module_image_path', None)
+
+        # Initialize variables to store results of module summary and image path
+        module_summary = None
+        module_image_path = None
+
+        # Process as tasks complete
+        for future in as_completed(future_to_task):
+            task_type, topic = future_to_task[future]
+            try:
+                result = future.result()
+                if task_type == 'topic':
+                    # Integrate the processed topic result as needed
+                    pass  # Placeholder for any topic-specific integration
+                elif task_type == 'module_summary':
+                    module_summary = result
+                elif task_type == 'module_image_path':
+                    module_image_path = result
+            except Exception as exc:
+                print(f'{task_type} processing generated an exception: {exc}')
+
     print(module_summary)
 
-    module_image_path = generate_openai_image(module_title)
-
     if save:
-        save_to_mongo(
-            module_title, topics, module_summary, course_id, module_image_path, force
-        )
+        save_to_mongo(module_title, topics, module_summary,
+                      course_id, module_image_path, force)
 
     return topics
 
