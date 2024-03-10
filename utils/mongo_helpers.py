@@ -49,3 +49,18 @@ def get_module_summary(module_title):
         return module_data.get('module_summary', '')
     else:
         return None
+    
+def get_module(module_title):
+    mongo_url = os.getenv('MONGO_URL')
+    client = MongoClient(mongo_url)
+    db = client.module_qa
+    collection = db.module_qa
+
+    module_data = collection.find_one({'module_title': module_title})
+    client.close()
+    
+    if module_data:
+        # Convert ObjectId to string
+        module_data['_id'] = str(module_data['_id'])
+
+    return module_data

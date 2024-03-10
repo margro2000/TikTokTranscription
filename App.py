@@ -1,6 +1,8 @@
 from utils.mongo_helpers import save_to_mongo
 import json
 from utils.openai_helpers import get_openai_response
+from utils.mongo_helpers import get_module_summary, get_module
+from utils.solar_helpers import ask_solar
 from Download import download_video_from_tiktok
 from Transcribe import extract_transcript_from_deepgram, is_transcript_usable
 
@@ -149,6 +151,65 @@ def generate_module_summary(module_title, topics):
     summary = get_openai_response(prompt)
     return summary
 
+def quiz_solar_about_module(module_title, question):
+    module_summary = get_module_summary(module_title)
+
+    if module_summary:
+        prompt = f"""
+            Given the module summary: {module_summary}, please answer the following student query politely: {question}
+        """
+        return ask_solar(prompt)
+    else:
+        return "Module summary not found."
+
+
+def generate_module_suggestions(module_title, question, answer, lesson_structure={}):
+    module = get_module(module_title)
+
+    prompt = f"""
+    You are a helpful AI tutor, part of an AI tutoring system. 
+    
+    Check out the following lesson plan, the student's question and your system's answer.
+    
+    Based on that information are there any new modules that need to be added to the curriculum?
+    
+    You are being asked to suggest new modules to be added.
+    
+    You may also suggest new topics within the current module.
+    
+    Please also along with each recommendation provide a recommendation strength that ranges from 0 (not recommended) t o 100 (highly recommended).
+    
+    Please do not make frivolous recommendations. We only want those with a decent recommendation strength.
+
+    {"Lesson Structure: " + json.dumps(lesson_structure) if lesson_structure else ""}
+    
+    Module structure:
+    {json.dumps(module)}
+    
+    Current student question: {question}
+    Current system answer: {answer}
+    
+    Please return suggestions in the following valid JSON format:
+    
+    [
+        {{
+            "module_title": "new module title",
+            "topics": [
+                {{
+                    "topic": "topic 1",
+                    "search_query": "search query 1"
+                }}
+            ],
+            "recommendation_strength": 90,
+            "recommendation_reason": "The student needs to dive deeper into the concept of X and it makes for a worthy submodule." 
+        }}
+    ]
+    
+    If you have no suggestions, please return an empty list.
+    """    
+    text = get_openai_response(prompt)
+    response = get_json_from_response(text)
+    return response
 
 def hydrate_module_from_title(module_title, save=False, force=False):
     topics = generate_topics_from_module_title(module_title)

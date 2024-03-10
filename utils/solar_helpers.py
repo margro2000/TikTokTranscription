@@ -1,5 +1,4 @@
 from openai import OpenAI
-from utils.mongo_helpers import get_module_summary
 
 API_KEY = "3YQiOZoqSS6qHJj6I2cVpq2mO0pZXxjQ"
 
@@ -23,18 +22,6 @@ def ask_solar(prompt, system_prompt="You are a helpful master tutor AI living in
         ]
     )
     return response.choices[0].message.content
-
-
-def quiz_solar_about_module(module_title, question):
-    module_summary = get_module_summary(module_title)
-
-    if module_summary:
-        prompt = f"""
-            Given the module summary: {module_summary}, please answer the following student query politely: {question}
-        """
-        return ask_solar(prompt)
-    else:
-        return "Module summary not found."
 
 
 if __name__ == "__main__":
