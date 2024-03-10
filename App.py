@@ -1,3 +1,4 @@
+from utils.mongo_helpers import save_to_mongo
 import json
 from utils.openai_helpers import get_openai_response
 from Download import download_video_from_tiktok
@@ -132,7 +133,7 @@ def extract_qa_from_transcript(module_title, topic, transcript):
     return response
 
 
-def hydrate_module_from_title(module_title):
+def hydrate_module_from_title(module_title, save=False):
     topics = generate_topics_from_module_title(module_title)
     for topic in topics:
         index = 0
@@ -154,5 +155,8 @@ def hydrate_module_from_title(module_title):
             video["transcript"]
         )
         topic["qa"] = qa
+
+    if save:
+        save_to_mongo(module_title, topics)
 
     return topics

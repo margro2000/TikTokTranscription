@@ -10,10 +10,11 @@ from App import hydrate_module_from_title
 
 @click.command()
 @click.argument('module_title')
-def cmd_hydrate_module_from_title(module_title):
+@click.option('--save/--no-save', default=False)
+def cmd_hydrate_module_from_title(module_title, save):
     """"""
     print(module_title)
-    result = hydrate_module_from_title(module_title)
+    result = hydrate_module_from_title(module_title, save)
 
     print(result)
 

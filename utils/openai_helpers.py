@@ -8,7 +8,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def get_openai_response(prompt, system_prompt="You are a helpful assistant", model="gpt-4-0125-preview", response_format="text"):
+def get_openai_response(prompt, system_prompt="You are a helpful assistant", model="gpt-4", response_format="text"):
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt},
