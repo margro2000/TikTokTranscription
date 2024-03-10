@@ -14,7 +14,7 @@ def get_json_from_response(text):
     # Parse the JSON string
     topics = json.loads(json_str)
 
-    print(topics)
+    return topics
 
 
 def generate_topics_from_module_title(module_title):
