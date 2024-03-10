@@ -5,6 +5,45 @@ from utils.mongo_helpers import get_module_summary, get_module
 from utils.solar_helpers import ask_solar
 from Download import download_video_from_tiktok
 from Transcribe import extract_transcript_from_deepgram, is_transcript_usable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse, unquote
+import os
+import requests
+
+
+def download_image(openai_image_url):
+    # Parse the URL to extract the path, then unquote to decode percent-encoded characters
+    parsed_url = urlparse(openai_image_url)
+    path = unquote(parsed_url.path)
+
+    # Extract the filename from the URL path
+    filename = os.path.basename(path)
+
+    # Specify the directory where you want to save the image
+    root_dir = os.path.join(os.getcwd(), "downloads")
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
+    # Full path for the file
+    file_path = os.path.join(root_dir, filename)
+
+    # Check if the file already exists
+    if os.path.exists(file_path):
+        print(f"File '{filename}' already exists. Skipping download.")
+        return file_path
+
+    # Download the image
+    response = requests.get(openai_image_url, stream=True)
+    if response.status_code == 200:
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+        print(f"File '{filename}' downloaded successfully.")
+        return file_path
+    else:
+        print(
+            f"Failed to download the file. Status code: {response.status_code}")
+        return None
 
 
 def get_json_from_response(text):
@@ -34,7 +73,7 @@ def generate_topics_from_module_title(module_title):
     For example, given the module title "Working with objects using Adobe Illustrator", we expect output like this, except whittled down to 5.
     
     [
-        {{generate_topics_from_module_title
+        {{
             "topic": "Creating shapes and objects",
             "search_query": "adobe illustrator creating shapes objects tutorial"
         }},
