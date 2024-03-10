@@ -151,6 +151,7 @@ def generate_module_summary(module_title, topics):
     summary = get_openai_response(prompt)
     return summary
 
+
 def quiz_solar_about_module(module_title, question):
     module_summary = get_module_summary(module_title)
 
@@ -206,10 +207,11 @@ def generate_module_suggestions(module_title, question, answer, lesson_structure
     ]
     
     If you have no suggestions, please return an empty list.
-    """    
+    """
     text = get_openai_response(prompt)
     response = get_json_from_response(text)
     return response
+
 
 def hydrate_module_from_title(module_title, save=False, force=False):
     topics = generate_topics_from_module_title(module_title)
@@ -240,4 +242,10 @@ def hydrate_module_from_title(module_title, save=False, force=False):
     if save:
         save_to_mongo(module_title, topics, module_summary, force)
 
+    return topics
+
+
+def create_module_from_title(module_title, save=True, force=False):
+    """ Syntactic suger for hydate module from title + save by default """
+    topics = hydrate_module_from_title(module_title, save, force)
     return topics
