@@ -33,3 +33,19 @@ def save_to_mongo(module_title, topics, module_summary, force=False):
 
     # Close the connection
     client.close()
+
+
+def get_module_summary(module_title):
+    mongo_url = os.getenv('MONGO_URL')
+    client = MongoClient(mongo_url)
+    db = client.module_qa
+    collection = db.module_qa
+
+    module_data = collection.find_one(
+        {'module_title': module_title}, {'module_summary': 1})
+    client.close()
+
+    if module_data:
+        return module_data.get('module_summary', '')
+    else:
+        return None

@@ -132,6 +132,7 @@ def extract_qa_from_transcript(module_title, topic, transcript):
     response = get_json_from_response(text)
     return response
 
+
 def generate_module_summary(module_title, topics):
     prompt = f"""
     Given the following module title "{module_title}" and topics, generate a summary of the module.
@@ -149,7 +150,7 @@ def generate_module_summary(module_title, topics):
     return summary
 
 
-def hydrate_module_from_title(module_title, save=False):
+def hydrate_module_from_title(module_title, save=False, force=False):
     topics = generate_topics_from_module_title(module_title)
     for topic in topics:
         index = 0
@@ -171,10 +172,11 @@ def hydrate_module_from_title(module_title, save=False):
             video["transcript"]
         )
         topic["qa"] = qa
-    
+
     module_summary = generate_module_summary(module_title, topics)
+    print(module_summary)
 
     if save:
-        save_to_mongo(module_title, topics, module_summary)
+        save_to_mongo(module_title, topics, module_summary, force)
 
     return topics
