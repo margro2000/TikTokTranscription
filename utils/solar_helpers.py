@@ -29,7 +29,9 @@ def quiz_solar_about_module(module_title, question):
     module_summary = get_module_summary(module_title)
 
     if module_summary:
-        prompt = f"Given the module summary: {module_summary}, {question}"
+        prompt = f"""
+            Given the module summary: {module_summary}, please answer the following student query politely: {question}
+        """
         return ask_solar(prompt)
     else:
         return "Module summary not found."
