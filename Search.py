@@ -8,7 +8,7 @@ import sys
 # query = sys.argv[1] if len(sys.argv) > 1 else query
 
 
-def search(query: str):
+def search(query: str, index: int = 0):
     query = urllib.parse.quote(query)
 
     url = f"https://www.tiktok.com/api/search/general/full/?WebIdLastTime=1707278561&aid=1988&app_language=en&app_name=tiktok_web&browser_language=en-US&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F122.0.0.0%20Safari%2F537.36&channel=tiktok_web&cookie_enabled=true&device_id=7332705406432642591&device_platform=web_pc&device_type=web_h264&focus_state=true&from_page=search&history_len=10&is_fullscreen=true&is_page_visible=true&keyword={query}&offset=0&os=mac&priority_region=US&referer=https%3A%2F%2Fwww.tiktok.com%2F&region=US&root_referer=https%3A%2F%2Fwww.tiktok.com%2F&screen_height=982&screen_width=1512&search_source=normal_search&tz_name=America%2FLos_Angeles&verifyFp=verify_ltkn9zky_HuUyt9Ca_Q9rT_4BHU_9tSM_mhRRLnK7Qbct&web_search_code=%7B%22tiktok%22%3A%7B%22client_params_x%22%3A%7B%22search_engine%22%3A%7B%22ies_mt_user_live_video_card_use_libra%22%3A1%2C%22mt_search_general_user_live_card%22%3A1%7D%7D%2C%22search_server%22%3A%7B%7D%7D%7D&webcast_language=en&msToken=JIk50O8QR3_BkPbiMQlOiu14nujJOk40Skwf0UuhbvyMZmLDGDlT5v0AuoD76bPUdN5rLmEetfjSZrNRtlg-dNXJnzMgSgpqMho0sLE4T85ouxre2mAtPTmG-bnbPS9uYh-YMPDyw00Xz0Lm&X-Bogus=DFSzswVO3vsANGyItbEaOELNKBTI&_signature=_02B4Z6wo000012ZIMLwAAIDANLcQpynAo8NmSDQAALyK93"
@@ -40,6 +40,6 @@ def search(query: str):
 
         # print(json.dumps(as_json["data"][0]["item"], indent=2))
 
-        download_uri = as_json["data"][0]["item"]["video"]["id"]
+        download_uri = as_json["data"][index]["item"]["video"]["id"]
 
         return download_uri

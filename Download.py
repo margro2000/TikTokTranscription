@@ -47,12 +47,12 @@ def download_media(item):
     }
 
 
-def download_video_from_tiktok(query):
+def download_video_from_tiktok(query, index=0):
     headers = {
         "User-Agent": "TikTok 26.2.0 rv:262018 (iPhone; iOS 14.4.2; en_US) Cronet"
     }
 
-    id = search(query)
+    id = search(query, index)
 
     data = getVideo(id, headers)
 

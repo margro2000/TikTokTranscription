@@ -1,6 +1,7 @@
 import requests
 from dotenv import load_dotenv
 import os
+from utils.openai_helpers import get_openai_response
 
 # Load environment variables
 load_dotenv()
@@ -19,3 +20,21 @@ def extract_transcript_from_deepgram(video_file_path):
     data = response.json()
     transcript = data['results']['channels'][0]['alternatives'][0]['transcript']
     return transcript
+
+
+def is_transcript_usable(transcript: str) -> bool:
+    prompt = f""""
+    Is the following transcript usable? 
+    i.e. can meaningful questions and answers be derived from it?
+    
+    Please answer with the single word "yes" or "no".
+
+    Transcript:
+    {transcript}
+    
+    Usable?
+    """
+
+    answer = get_openai_response(prompt)
+
+    return "yes" in answer.lower()

@@ -1,7 +1,7 @@
 import json
 from utils.openai_helpers import get_openai_response
 from Download import download_video_from_tiktok
-from Transcribe import extract_transcript_from_deepgram
+from Transcribe import extract_transcript_from_deepgram, is_transcript_usable
 
 
 def get_json_from_response(text):
@@ -135,16 +135,24 @@ def extract_qa_from_transcript(module_title, topic, transcript):
 def hydrate_module_from_title(module_title):
     topics = generate_topics_from_module_title(module_title)
     for topic in topics:
-        video = download_video_from_tiktok(topic["search_query"])
-        video["transcript"] = extract_transcript_from_deepgram(
-            video["path"])
+        index = 0
+        while index < 10:
+            video = download_video_from_tiktok(topic["search_query"], index)
+            transcript = extract_transcript_from_deepgram(
+                video["path"])
+            print(transcript)
+            if is_transcript_usable(transcript):
+                video["transcript"] = transcript
+                break
+            else:
+                index += 1
+
         topic["video"] = video
-        print(topic)
         qa = extract_qa_from_transcript(
             module_title,
             topic["topic"],
             video["transcript"]
         )
         topic["qa"] = qa
-        break
+
     return topics
