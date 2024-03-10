@@ -38,11 +38,8 @@ def search(query: str):
         for item in as_json["data"]:
             print(item["item"]["desc"])
 
-        print(as_json["data"][0]["item"]["video"])
+        print(json.dumps(as_json["data"][0]["item"], indent=2))
 
         download_uri = as_json["data"][0]["item"]["video"]["id"]
 
         return download_uri
-
-
-search("how to learn html")
