@@ -126,11 +126,27 @@ def extract_qa_from_transcript(module_title, topic, transcript):
 
     Questions and answers:
     """
-    print(prompt)
+    # print(prompt)
     text = get_openai_response(prompt)
-    print(text)
+    # print(text)
     response = get_json_from_response(text)
     return response
+
+def generate_module_summary(module_title, topics):
+    prompt = f"""
+    Given the following module title "{module_title}" and topics, generate a summary of the module.
+    
+    The max length is 2500 words. This is a hard limit. 
+    
+    This summary will be passed on to a smaller LLM and used in context to answer student questions.
+    
+    Students are not very sophisticated and are not expected to have a lot of background knowledge. Nor is the LLM.
+    So you should make this summary easy to follow, easy to generate great answers from, yet have a lot of technical and emotive depth.
+    
+    You are a master AI tutor. Go forth and produce something epic that students and smaller AIs can use as a touchstone for the module.
+    """
+    summary = get_openai_response(prompt)
+    return summary
 
 
 def hydrate_module_from_title(module_title, save=False):
@@ -155,8 +171,10 @@ def hydrate_module_from_title(module_title, save=False):
             video["transcript"]
         )
         topic["qa"] = qa
+    
+    module_summary = generate_module_summary(module_title, topics)
 
     if save:
-        save_to_mongo(module_title, topics)
+        save_to_mongo(module_title, topics, module_summary)
 
     return topics
