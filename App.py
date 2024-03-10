@@ -1,9 +1,10 @@
 import json
 from utils.openai_helpers import get_openai_response
+from Download import download_video_from_tiktok
+from Transcribe import extract_transcript_from_deepgram
+
 
 def get_json_from_response(text):
-
-
     # Find the start and end of the JSON string
     start_index = text.index('[')
     end_index = text.rindex(']') + 1  # +1 to include the closing bracket
@@ -30,7 +31,7 @@ def generate_topics_from_module_title(module_title):
     For example, given the module title "Working with objects using Adobe Illustrator", we expect output like this, except whittled down to 5.
     
     [
-        {{
+        {{generate_topics_from_module_title
             "topic": "Creating shapes and objects",
             "search_query": "adobe illustrator creating shapes objects tutorial"
         }},
@@ -92,3 +93,58 @@ def generate_topics_from_module_title(module_title):
     text = get_openai_response(prompt)
     response = get_json_from_response(text)
     return response
+
+
+def extract_qa_from_transcript(module_title, topic, transcript):
+    prompt = f"""
+    Given the following module, topic and transcript of short video, extract a list of questions and answers for a quiz.
+    
+    Keep it light, at a 9th-11th grade accessible level. But do test the student's understanding of the topic.
+
+    Module title: {module_title}
+    Topic: {topic}
+    Transcript:
+    {transcript}
+    
+    Return your response in the format
+    
+    [
+        {{
+            "question": "who moved the cheese?"
+            "answer": "you did",
+            "options": []
+            "style": "free_text"
+        }}
+    ]
+    
+    The two options for question style are "free_text" and "multiple_choice". If the qa style is "multiple_choice", the answer MUST be in the options.
+    
+    If there are no questions to be asked, return a soft generic question or two related to the module or preferably the topic.
+    
+    AVOID asking questions that are phrased negatively eg "what is not a good way to do X?"
+
+    Questions and answers:
+    """
+    print(prompt)
+    text = get_openai_response(prompt)
+    print(text)
+    response = get_json_from_response(text)
+    return response
+
+
+def hydrate_module_from_title(module_title):
+    topics = generate_topics_from_module_title(module_title)
+    for topic in topics:
+        video = download_video_from_tiktok(topic["search_query"])
+        video["transcript"] = extract_transcript_from_deepgram(
+            video["path"])
+        topic["video"] = video
+        print(topic)
+        qa = extract_qa_from_transcript(
+            module_title,
+            topic["topic"],
+            video["transcript"]
+        )
+        topic["qa"] = qa
+        break
+    return topics

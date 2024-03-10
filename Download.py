@@ -28,22 +28,26 @@ def download_media(item):
     if not os.path.exists(root_dir):
         os.mkdir(root_dir)
 
-    fileName = f'{item["id"]}.mp4'
+    filename = f'{item["id"]}.mp4'
+
+    path = f"{root_dir}/{filename}"
 
     # check if file was already downloaded
-    if os.path.exists(f"{root_dir}/{fileName}"):
-        print(f'[!] File "{fileName}" already exists. Skipping')
-        return
+    if os.path.exists(path):
+        print(f'[!] File "{filename}" already exists. Skipping')
+    else:
+        downloadFile = requests.get(item["url"])
 
-    downloadFile = requests.get(item["url"])
+        with open(path, "wb") as file:
+            file.write(downloadFile.content)
 
-    with open(f"{root_dir}/{fileName}", "wb") as file:
-        file.write(downloadFile.content)
+    return {
+        "path": path,
+        "filename": filename
+    }
 
 
-@click.command()
-@click.argument("query")
-async def download(query):
+def download_video_from_tiktok(query):
     headers = {
         "User-Agent": "TikTok 26.2.0 rv:262018 (iPhone; iOS 14.4.2; en_US) Cronet"
     }
@@ -52,7 +56,13 @@ async def download(query):
 
     data = getVideo(id, headers)
 
-    download_media(data)
+    return download_media(data)
+
+
+@click.command()
+@click.argument("query")
+def download(query):
+    return download_video_from_tiktok(query)
 
 
 if __name__ == "__main__":

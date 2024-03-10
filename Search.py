@@ -33,12 +33,12 @@ def search(query: str):
         response = session.get(url, headers=headers)
         as_json = response.json()
 
-        print(json.dumps(as_json, indent=4))
+        # print(json.dumps(as_json, indent=4))
 
-        for item in as_json["data"]:
-            print(item["item"]["desc"])
+        # for item in as_json["data"]:
+        #     print(item["item"]["desc"])
 
-        print(json.dumps(as_json["data"][0]["item"], indent=2))
+        # print(json.dumps(as_json["data"][0]["item"], indent=2))
 
         download_uri = as_json["data"][0]["item"]["video"]["id"]
 
