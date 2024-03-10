@@ -7,7 +7,9 @@ import uuid
 load_dotenv()
 
 
-def save_to_mongo(module_title, topics, course_id, force=False):
+def save_to_mongo(
+    module_title, topics, module_summary, course_id, module_image_path="", force=False
+):
     mongo_url = os.getenv("MONGO_URL")
     client = MongoClient(mongo_url)
     # Replace 'your_database_name' with your actual database name
@@ -18,7 +20,15 @@ def save_to_mongo(module_title, topics, course_id, force=False):
     if force:
         # If force is True, insert or update the document
         collection.update_one(
-            {"module_title": module_title}, {"$set": {"topics": topics}}, upsert=True
+            {"module_title": module_title},
+            {
+                "$set": {
+                    "topics": topics,
+                    "module_summary": module_summary,
+                    "module_image_path": module_image_path,
+                }
+            },
+            upsert=True,
         )
         print(
             f"Document with module_title '{module_title}' inserted or updated with force."
@@ -30,6 +40,8 @@ def save_to_mongo(module_title, topics, course_id, force=False):
             document = {
                 "module_title": module_title,
                 "topics": topics,
+                "module_summary": module_summary,
+                "module_image_path": module_image_path,
                 "course_id": course_id,
             }
             collection.insert_one(document)
@@ -40,3 +52,36 @@ def save_to_mongo(module_title, topics, course_id, force=False):
 
     # Close the connection
     client.close()
+
+
+def get_module_summary(module_title):
+    mongo_url = os.getenv("MONGO_URL")
+    client = MongoClient(mongo_url)
+    db = client.module_qa
+    collection = db.module_qa
+
+    module_data = collection.find_one(
+        {"module_title": module_title}, {"module_summary": 1}
+    )
+    client.close()
+
+    if module_data:
+        return module_data.get("module_summary", "")
+    else:
+        return None
+
+
+def get_module(module_title):
+    mongo_url = os.getenv("MONGO_URL")
+    client = MongoClient(mongo_url)
+    db = client.module_qa
+    collection = db.module_qa
+
+    module_data = collection.find_one({"module_title": module_title})
+    client.close()
+
+    if module_data:
+        # Convert ObjectId to string
+        module_data["_id"] = str(module_data["_id"])
+
+    return module_data
